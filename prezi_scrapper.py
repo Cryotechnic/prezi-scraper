@@ -3,32 +3,37 @@ import img2pdf
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+# These imports handle the Firefox driver automatically
+from selenium.webdriver.firefox.service import Service
+from webdriver_manager.firefox import GeckoDriverManager
 
 # --- CONFIGURATION ---
-PREZI_URL = "YOUR_PREZI_URL_HERE"
-TOTAL_SLIDES = 20  # You must count the steps manually beforehand
-WAIT_TIME = 3      # Seconds to wait for animation (increase if internet is slow)
-OUTPUT_PDF = "presentation.pdf"
+PREZI_URL = "Slide URL here"  # Replace with your Prezi URL
+TOTAL_SLIDES = 24  # You must count the steps manually beforehand
+WAIT_TIME = 4      # Seconds to wait for animation (increase if internet is slow)
+OUTPUT_PDF = "prezi_presentation.pdf"
 # ---------------------
 
 def capture_prezi():
-    # 1. Setup the Browser
-    options = webdriver.ChromeOptions()
+    # 1. Setup Firefox
+    options = webdriver.FirefoxOptions()
     options.add_argument("--start-maximized")
-    # options.add_argument("--headless") # Keep commented out to see what's happening
+    options.add_argument("--window-size=1920,1080")
+    # options.add_argument("--headless") # Uncomment to run invisible
     
-    driver = webdriver.Chrome(options=options)
+    print("Setting up Firefox Driver...")
+    # This automatically downloads and links the correct geckodriver
+    driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options)
     
     try:
         print(f"Opening: {PREZI_URL}")
         driver.get(PREZI_URL)
         
-        # 2. Initial Load Wait (Give it time to load the heavy WebGL engine)
-        print("Waiting for Prezi to load...")
+        # 2. Initial Load Wait
+        print("Waiting for Prezi to load (15s)...")
         time.sleep(15) 
         
-        # Optional: Try to locate the 'fullscreen' button or just work in maximized window
-        # For simplicity, we interact with the 'body' to send keystrokes
+        # Locate the body to send keystrokes
         body = driver.find_element(By.TAG_NAME, "body")
         
         image_files = []
@@ -45,12 +50,13 @@ def capture_prezi():
             # Navigate Next
             body.send_keys(Keys.ARROW_RIGHT)
             
-            # Wait for the transition/zoom animation to settle
+            # Wait for animation
             time.sleep(WAIT_TIME)
 
         print("Capture complete. Generating PDF...")
         
         # 4. Convert to PDF
+        # Note: img2pdf requires the image files list
         with open(OUTPUT_PDF, "wb") as f:
             f.write(img2pdf.convert(image_files))
             
