@@ -45,9 +45,10 @@ def convert_image_to_csharp_hex(file_path, bytes_per_line=64, indent_spaces=8):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python pngjpgconvert.py <path_to_image.jpg>")
+        print("Usage: python img2hex.py <path_to_image.jpg>")
     else:
-        input_image = sys.argv[1]
+        # Join all command-line arguments after the script name to handle paths with spaces
+        input_image = " ".join(sys.argv[1:])
         output = convert_image_to_csharp_hex(input_image)
         if output.startswith("Error"):
             # Error already printed
